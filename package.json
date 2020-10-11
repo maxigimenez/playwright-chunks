@@ -1,0 +1,19 @@
+{
+  "name": "playwright-chunks",
+  "version": "0.0.1",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "build": "tsc"
+  },
+  "keywords": [
+    "playwright",
+    "chunks"
+  ],
+  "author": "Maxi Gimenez <gimenez.maxi@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "playwright": "^1.4.2",
+    "typescript": "^4.0.3"
+  }
+}
