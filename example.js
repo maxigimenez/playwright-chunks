@@ -16,9 +16,6 @@ const { PlaywrightChunks } = require('./lib');
 
   await page.goto('https://skuap.com/');
 
-  await page.waitForSelector('.container > .row > .col-md-2:nth-child(3) > .nav > .nav-item:nth-child(1)')
-  await page.click('.container > .row > .col-md-2:nth-child(3) > .nav > .nav-item:nth-child(1)')
-
   const resources = await chunks.stop(); 
   console.log(resources);
   console.log(resources.length);
