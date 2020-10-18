@@ -2,7 +2,7 @@ import { Page, Request } from 'playwright';
 
 const ResourceTypes = ['script', 'image', 'stylesheet', 'font', 'fetch', 'document'];
 
-type ResourceType =  keyof typeof ResourceTypes;
+type ResourceType = keyof typeof ResourceTypes;
 
 interface Resource {
   url: string;
@@ -14,21 +14,24 @@ interface Resource {
 export class PlaywrightChunks {
   private _page: Page;
   private _resources: Request[] = [];
-  private _listener: any = null;
+  private _listener: (request: Request) => void = () => ({});
   private _sameOrigin = false;
 
-  constructor (page: Page) {
+  constructor(page: Page) {
     this._page = page;
   }
 
   start({ resourceTypes, sameOrigin } = { resourceTypes: ResourceTypes, sameOrigin: false }): void {
     this._sameOrigin = sameOrigin;
-    this._page.on('request', this._listener = (request: Request) => {
-      const isResourceType = resourceTypes.includes(request.resourceType());
-      if (isResourceType) {
-        this._resources.push(request);
-      }
-    })
+    this._page.on(
+      'request',
+      (this._listener = (request: Request) => {
+        const isResourceType = resourceTypes.includes(request.resourceType());
+        if (isResourceType) {
+          this._resources.push(request);
+        }
+      }),
+    );
   }
 
   async stop(): Promise<Resource[]> {
@@ -39,34 +42,38 @@ export class PlaywrightChunks {
   }
 
   private async _process(): Promise<Resource[]> {
-    const resources = this._sameOrigin ? 
-      this._resources.filter(request => request.url().includes(this._hostname())) : 
-      this._resources;
+    const resources = this._sameOrigin
+      ? this._resources.filter((request) => request.url().includes(this._hostname()))
+      : this._resources;
 
-    return Promise.all(resources.map(async request => {
-      const url = request.url();
-      let error = '';
-      let body: string | Buffer = '';
+    return Promise.all(
+      resources.map(async (request) => {
+        const url = request.url();
+        let error = '';
+        let body: string | Buffer = '';
 
-      try {
-        const response = await request.response();
-        body = await response!.body();
-      } catch (e) {
-        error = e.message;
-      }
+        try {
+          const response = await request.response();
+          if (response) {
+            body = await response.body();
+          }
+        } catch (e) {
+          error = e.message;
+        }
 
-      return Promise.resolve({
-        url,
-        type: request.resourceType() as ResourceType,
-        size: body.toString().length,
-        error
-      })
-    }));
+        return Promise.resolve({
+          url,
+          type: request.resourceType() as ResourceType,
+          size: body.toString().length,
+          error,
+        });
+      }),
+    );
   }
 
   private _reset(): void {
     this._resources = [];
-    this._listener = null;
+    this._listener = () => ({});
   }
 
   private _hostname(): string {
