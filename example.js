@@ -2,7 +2,9 @@ const { chromium } = require('playwright');
 const { PlaywrightChunks } = require('./lib');
 
 (async () => {
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({
+    executablePath: '/usr/bin/chromium-browser'
+  });
   const page = await browser.newPage();
 
   await page.setViewportSize({ width: 1200, height: 800 });
