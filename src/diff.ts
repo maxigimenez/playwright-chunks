@@ -1,5 +1,6 @@
 import { Page } from 'playwright';
 import { Chunks } from './chunks';
+import { Resource } from './typings';
 
 export class Diff {
   private _page: Page;
@@ -22,18 +23,34 @@ export class Diff {
   
   async compare(): Promise<any> {
     const chunks = new Chunks(this._page);
+    const data = [{
+      url: this._initialUrl,
+      resources: []
+    }, {
+      url: this._toUrl,
+      resources: []
+    }];
+    
+    return Promise.all(data.map(async d => {
+      let resources: any = [];
+      try {
+        resources = await this._getChunks(chunks, d.url);
+      } catch (e) {}
+      return Promise.resolve({
+        ...d,
+        resources
+      })
+    }));
+  }
+  
+  private async _getChunks(chunks: Chunks, url: string): Promise<Resource[]> {
     chunks.start({
       resourceTypes: ['script'],
       sameOrigin: true
     });
     
-    await this._page.goto(this._initialUrl);
-
-    await this._page.waitForNavigation
-
-    await this._page.goto(this._toUrl);
+    await this._page.goto(url);
     
-    const resources = await chunks.stop();
-    return resources;
+    return await chunks.stop();
   }
 }
