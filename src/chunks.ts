@@ -1,17 +1,7 @@
 import { Page, Request } from 'playwright';
+import { ResourceTypes, ResourceType, Resource } from './typings';
 
-const ResourceTypes = ['script', 'image', 'stylesheet', 'font', 'fetch', 'document'];
-
-type ResourceType = keyof typeof ResourceTypes;
-
-interface Resource {
-  url: string;
-  type: ResourceType;
-  size: number;
-  error: string;
-}
-
-export class PlaywrightChunks {
+export class Chunks {
   private _page: Page;
   private _resources: Request[] = [];
   private _listener: (request: Request) => void = () => ({});
